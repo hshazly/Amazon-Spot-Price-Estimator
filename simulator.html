@@ -1,0 +1,266 @@
+<html>
+	<head>
+	 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <!-- start: CSS -->
+		<link id="bootstrap-style" href="/mcgk/static/bootstrap/optimus_css/bootstrap.css" rel="stylesheet">
+		<link href="/mcgk/static/bootstrap/optimus_css/bootstrap-responsive.min.css" rel="stylesheet">
+		<link id="base-style" href="/mcgk/static/bootstrap/optimus_css/style.css" rel="stylesheet">
+		<link id="base-style-responsive" href="/mcgk/static/bootstrap/optimus_css/style-responsive.css" rel="stylesheet">
+		<link href="/mcgk/static/css/base.css" rel="stylesheet">
+		<link rel="stylesheet" href="/mcgk/static/Ladda-master/dist/ladda.min.css">
+        <!-- end: CSS -->
+        
+		<link href="/mcgk/static/tribal/tribal-form.css" rel="stylesheet" />
+		<script src="js/details.js" type="text/javascript"></script>
+         <script src="js/Functions.js" type="text/javascript"></script>		
+		<script type="text/javascript" src="/mcgk/static/tribal/tribal-shared.js"></script>
+		<script src="/mcgk/static/Ladda-master/dist/spin.min.js"></script>
+		<script src="/mcgk/static/Ladda-master/dist/ladda.min.js"></script>
+
+         <!--<script src="/js/theme.js" type="text/javascript"></script>-->
+         <style>
+			body {
+				padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+			}
+			@font-face {
+				font-family: 'icon-dollar';
+				src: url('/mcgk/static/font/icon-dollar.eot?1269751');
+				src: url('/mcgk/static/font/icon-dollar.eot?1269751#iefix') format('embedded-opentype'),
+				url('/mcgk/static/font/icon-dollar.woff?1269751') format('woff'),
+				url('/mcgk/static/font/icon-dollar.ttf?1269751') format('truetype'),
+				url('/mcgk/static/font/icon-dollar.svg?1269751#icon-dollar') format('svg');
+				font-weight: normal;
+				font-style: normal;
+			}
+     
+     
+			.demo-icon
+			{
+				font-family: "icon-dollar";
+				font-style: normal;
+				font-weight: normal;
+				color: black;
+				speak: none;
+     
+				display: inline-block;
+				text-decoration: inherit;
+				//width: 1em;
+				//margin-right: .2em;
+				//text-align: center;
+				/* opacity: .8; */
+     
+				/* For safety - reset parent styles, that can break glyph codes*/
+				font-variant: normal;
+				text-transform: none;
+     
+				/* fix buttons height, for twitter bootstrap */
+				line-height: 1em;
+     
+				/* Animation center compensation - margins should be symmetric */
+				/* remove if not needed */
+				//margin-left: .2em;
+     
+				/* Font smoothing. That was taken from TWBS */
+				-webkit-font-smoothing: antialiased;
+				-moz-osx-font-smoothing: grayscale;
+     
+				/* Uncomment for 3D effect */
+				/* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */
+			}
+     </style>
+
+			
+		</style>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<script type="text/javascript">
+                       $(document).ready(function(){
+                                //get_instance_types();
+                                
+                                $.ajax({
+                                        //url: "http://nubios.nileu.edu.eg/mcgk/simulator/fetch_instances",
+                                        url: "/ajax/fetch_instances",
+                                        method: "get",
+                                        success: function(data){
+                                                html = "";
+                                                //obj = JSON && JSON.parse(data) || $.parseJSON(data);
+                                                //alert(typeof(data));
+                                                instances = data.split('+')[0].split(',')
+                                                zones = data.split('+')[1].split(',')
+                                                //instances = data1.split(",")
+                                                //alert(instances);
+                                                for(count = 0; count<instances.length; count++){
+                                                        if(instances[count] == ""){
+                                                                continue;
+                                                        }                       
+                                                        html += "<option value='"+instances[count]+"'>"+instances[count]+"</option>"
+                                                }
+                                                //alert(html);
+                                                $("#instance").html(html);
+
+                                                html = ""
+                                                //zones = data2.split(",")
+                                                for(count = 0; count<zones.length; count++){
+                                                        if(zones[count] == ""){
+                                                                continue;
+                                                        }                       
+                                                        html += "<option value='"+zones[count]+"'>"+zones[count]+"</option>"
+                                                }
+                                                $("#zone").html(html);
+
+
+                                        }
+                                        //$("#instances").html(html);
+                                });
+
+                                $("#bid_sim_params").submit(function(e){
+                                        e.preventDefault();     
+                                        //alert("Please be patient until we fetch the data");
+                                        var bid = document.forms["bid_sim_params"]["bid"].value;
+					if(bid == ""){
+						alert("Please enter your bid");
+						return false;
+					}
+                                        var l = Ladda.create( document.querySelector( 'button' ) );
+                                        l.start();
+                                        //event.preventDefault();
+                                        var instance_type = document.forms["bid_sim_params"]["instance"].value;
+                                        var zone = document.forms["bid_sim_params"]["zone"].value;
+
+                                        $.ajax({
+                                                url: "/ajax/calc",
+                                                data: {"bid":bid, "instance":instance_type, "zone":zone},
+                                                method: "get",
+                                                success: function(d){
+                                                        document.getElementById("exp_str").style.display = "";
+                                                        //document.getElementById("exp_lt").style.display = "";
+                                                        if(d == "NA"){
+                                                                $("#exp_str").html("No Data was Received from AWS service");
+                                                        }else if(d.indexOf("ERROR") > -1){
+                                                                $("#exp_str").html(d);
+                                                        }else{
+                                                                //$("#exp_str").html("Expected lifetime: " + d + " minutes");
+                                                                //ondemand_price = d["ondemand_price"]
+                                                                //exp_lt = d["exp_lt"]
+                                                                //$("#ondemand_price").html("On-demand price: " + ondemand_price);
+                                                                $("#exp_str").html("Expected lifetime: " + d);
+                                                        }
+                                                        l.stop();
+                                                }
+                                        });
+                                        //return false;
+                                });
+                        });
+
+
+			function validate_params(){
+				var ret_value = false;
+				var bid = document.forms["bid_sim_params"]["bid"].value;
+				var instance_type = document.forms["bid_sim_params"]["instance_type"].value;
+				
+				if(bid == "" || instance_type == ""){
+					alert("Please enter both parameters")
+					ret_value = false;
+				}else{
+					ret_value = true;
+				}
+				
+				return ret_value;
+			}
+
+        </script>
+	</head>
+<body>
+	<script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script> 
+	<script src="/mcgk/static/bootstrap/js/bootstrap.min.js"></script>
+    <div class="navbar navbar-fixed-top">
+		<div class="navbar-inner">
+			<div class="container-fluid">
+				<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</a>
+				<div class="nav-collapse collapse pull-left">
+					<ul class="nav">
+						<li><img src="mcgk.png" style="width:200px;height:40px"></li>
+						<li><a href="/mcgk"><i class="icon-home"></i> Home</a></li>
+                                                <li><a href="/mcgk/webui.html"><i class="icon-play-circle"></i> Run MC-GenomeKey</a></li>
+
+						<li class="active"><a href="/mcgk/simulator.html"><i class="demo-icon icon-dollar" style="color:#000000">&#xe800;</i>Bid Simulator</a></li>
+						<li><a href="/mcgk/downloads.html"><i class="demo-icon icon-list-alt"></i> Downloads</a></li>
+                                                <li><a href="/mcgk/auth.html"><i class="demo-icon icon-lock"></i> Authentication</a></li>
+
+					</ul>
+				</div>		
+			</div><!--/.nav-collapse -->
+		</div>
+	</div>
+    <div class="container-fluid">
+		<div class="hero-unit">
+			<h1>Bid Simulator</h1><br/>
+			<p>You can use this service to know the expected lifetime of an aws spot instance given a bid price, thus making a knowledge-based decision and compromise between your intended bid and the desired lifetime of an instance.<br/>
+			The lifetime of an instance is calculated as the weighted mean of the lifetime of that instance every day from the current date to 90 days back.<br></br>			
+			</p>
+			<hr/>
+			<form class='form-inline' name='bid_sim_params' id='bid_sim_params' method="get" action="py/simulator/calc">
+				Instance type:
+				<select name="instance" id="instance" style="width:15%"></select>
+			
+      Availability Zone:
+                                <!--<input type="text" id="zone" name="zone" style="height:5%"/>-->
+                                <select name="zone" id="zone" style="width:15%"><!--<option value="us-east-1a">us-east-1a</option><option value="us-east-1b">us-east-1b</option><option value="us-east-1c">us-east-1c</option><option value="us-east-1d">us-east-1d</option>--></select>                                        <!--<option value="m3.medium">m3.medium</option>-->
+
+                                Bid:
+                                <input type="text" id="bid" name="bid" style="width:10%;height:5%;margin-right:20px" placeholder="0.001"/>
+
+                                <!--<button type='submit' class="btn btn-primary btn-med" onclick='return validate_params()' id='cal_button'>Calculate</button>-->
+                                <button type='submit' class="ladda-button" data-color="purple" data-style="expand-right">Calculate
+                                        <span class="ladda-spinner"></span>
+                                </button>
+	
+			</form>
+			
+			<table>
+				<tr>
+					<td id="exp_str" name="exp_str" style="display:none">
+						<b>Expected lifetime:</b>
+					</td>
+					<td id="exp_lt" name="exp_lt" style="display:none">	
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div align="center" id='footerArea'>
+			<p>all rights reserved ® Bioinformatics Department Nile University</p>
+		</div>
+	</div>	<!-- container-fluid -->
+
+		<script>
+
+			// Bind normal buttons
+			//Ladda.bind( '.button-demo button', { timeout:2000 } );
+	
+
+			// Bind progress buttons and simulate loading progress
+			Ladda.bind( '.progress-demo button', {
+				callback: function( instance ) {
+					var progress = 0;
+					var interval = setInterval( function() {
+						progress = Math.min( progress + Math.random() * 0.1, 1 );
+						instance.setProgress( progress );
+
+						if( progress === 1 ) {
+							instance.stop();
+							clearInterval( interval );
+						}
+					}, 200 );
+				}
+			} );
+	
+			//<a class="fork" href="https://github.com/hakimel/Ladda"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github-camo.global.ssl.fastly.net/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub"></a>
+
+		</script>
+
+		<script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
+
+</html>
