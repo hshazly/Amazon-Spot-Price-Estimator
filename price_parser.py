@@ -20,7 +20,7 @@ def getmins(start_date, td):
 	return mins	
 
 
-def parse_and_calculate(aws_spot_history, bid):
+def parse(aws_spot_history, bid):
 	#aws_spot_history = sys.argv[1]
 	#bid = float(sys.argv[2])
 
@@ -45,39 +45,44 @@ def parse_and_calculate(aws_spot_history, bid):
 	prices = list(reversed(prices))
 
 	#LIST OF (TIMESTAMP, PRICE)
-	ordered = []
+	return prices, timestamps
 
-	x = len(timestamps)
-	for i in range(0, x):
-		ordered.append((timestamps[i],prices[i]))
 
-	avg_lifetime = 0
-	start_date = 0
-	lifetime_list = []
+def calculate(prices, timestamps):
+        ordered = []
 
-	for itr1 in range(0, len(ordered)):
-		current_date = parser.parse(ordered[itr1][0])
-		current_bid = ordered[itr1][1]
+        x = len(timestamps)
+        for i in range(0, x):
+                ordered.append((timestamps[i],prices[i]))
 
-		#start_date = 0 MEANS 1st ITERATION OR SEARCH FOR INITIALIZATION VALUE
-		if start_date == 0 and current_bid <= bid:
-			start_date = parser.parse(ordered[itr1][0])
-			continue
-		
-		#CALCULATE IF CONDITION IS VIOLATED OR YOU REACHED EOF
-		if ((start_date != 0) and current_bid > bid) or itr1 == len(ordered)-1:
-			if itr1 == len(ordered)-1 and start_date == 0:
-				lifetime = 0
-			else:	
-				lifetime = getmins(start_date, current_date)
-				#t_range.append((str(bid) + "=="+ str(lifetime) +" = "+ str(start_date), str(current_date)))
-				lifetime_list.append(lifetime)
-				start_date = 0
-			
+        avg_lifetime = 0
+        start_date = 0
+        lifetime_list = []
 
-	if len(lifetime_list) != 0: 
-		avg_lifetime = sum(lifetime_list)/len(lifetime_list)
-	else:
-		avg_lifetime = 0
+        for itr1 in range(0, len(ordered)):
+                current_date = parser.parse(ordered[itr1][0])
+                current_bid = ordered[itr1][1]
 
-	return avg_lifetime
+                #start_date = 0 MEANS 1st ITERATION OR SEARCH FOR INITIALIZATION VALUE
+                if start_date == 0 and current_bid <= bid:
+                        start_date = parser.parse(ordered[itr1][0])
+                        continue
+
+                #CALCULATE IF CONDITION IS VIOLATED OR YOU REACHED EOF
+                if ((start_date != 0) and current_bid > bid) or itr1 == len(ordered)-1:
+                        if itr1 == len(ordered)-1 and start_date == 0:
+                                lifetime = 0
+                        else:
+                                lifetime = getmins(start_date, current_date)
+                                #t_range.append((str(bid) + "=="+ str(lifetime) +" = "+ str(start_date), str(current_date)))
+                                lifetime_list.append(lifetime)
+                                start_date = 0
+
+
+        if len(lifetime_list) != 0:
+                avg_lifetime = sum(lifetime_list)/len(lifetime_list)
+        else:
+                avg_lifetime = 0
+
+        return avg_lifetime
+

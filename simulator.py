@@ -3,7 +3,8 @@ import os, MySQLdb,subprocess,random,simplejson,time
 import json
 #from mod_python import util,Cookie,apache
 from datetime import datetime, timedelta
-from price_parser import parse_and_calculate
+#from price_parser import parse_and_calculate
+import price_parser
 import scipy.interpolate
 
 def index():
@@ -98,7 +99,7 @@ def calc(req):
     import random
     rand=random.randint(1,1000000000000)
    
-    working_dir = os.path.join("/var/www/mcgk/tmp/calculator", str(rand))
+    working_dir = os.path.join("calculator", str(rand))
     cmd = "mkdir -p {0}".format(working_dir)
     p = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
@@ -108,7 +109,7 @@ def calc(req):
     #os.system("rm spot-* *.price")
 
     #price_history_file = "spot-{0}.txt".format(instance_type) #AUTOMATIC
-    price_history_file = "/var/www/mcgk/py/history_db/{0}".format(instance_type+"-"+zone)
+    price_history_file = "history_db/{0}".format(instance_type+"-"+zone)
 
     #aws_cmd = "aws ec2 describe-spot-price-history --instance-types \"{0}\" --product-descriptions \"Linux/UNIX\" --availability-zone \"{1}\" > {2}".format(instance_type, zone, price_history_prefix)
     #raise Exception(aws_cmd)
@@ -129,8 +130,9 @@ def calc(req):
     #raise Exception(cal_avg_lt)
     #print cal_avg_lt
     #execute(cal_avg_lt)
-    time.sleep(5) 
-    avg_lt = parse_and_calculate(price_history_file, bid)
+    #avg_lt = parse_and_calculate(price_history_file, bid)
+    prices, timestamps = parse(price_history_file, bid)
+    avg_lt = calculate(price_history_file)
 
     sec = avg_lt * 60
     sec = timedelta(seconds=int(sec))
